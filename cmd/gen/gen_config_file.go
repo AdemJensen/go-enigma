@@ -14,7 +14,7 @@ func main() {
 		outFileName string
 	)
 
-	flag.IntVar(&rotorCount, "rotor_count", 3, "Defines the rotor count of this machine")
+	flag.IntVar(&rotorCount, "rotor_count", 3, "Defines the initial rotor count of this machine")
 	flag.IntVar(&nGenRotors, "num_gen_rotors", 5, "How many rotors to generate")
 	flag.StringVar(&outFileName, "out_file_name", "conf.json", "Output config to which file")
 	flag.Parse()
@@ -39,8 +39,6 @@ func main() {
 	refec := json_conf.NewRandomReflectorConfig()
 
 	conf := &json_conf.Config{
-		Debug:         false,
-		RotorCount:    rotorCount,
 		InitialRotors: initialRotors,
 		InitialPlugs:  []json_conf.PlugConfig{},
 		Rotors:        rotors,

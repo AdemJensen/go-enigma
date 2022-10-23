@@ -38,6 +38,7 @@ func NewRandomReflectorConfig() ReflectorConf {
 	mappingTable := make(map[string]string)
 	for idx, key := range mappingKeys {
 		mappingTable[string(key)] = string(val[idx])
+		mappingTable[string(val[idx])] = string(key)
 	}
 	return mappingTable
 }

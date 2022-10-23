@@ -71,9 +71,18 @@ mainLoop:
 			fmt.Printf("Current rotor position: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRotorPosition()))
 			fmt.Println("OK")
 		case "change":
-			fmt.Printf("change rotors, please input %d rotor numbers (seperated by space): ", c.conf.RotorCount)
-			rotorIndexes := make([]int, c.conf.RotorCount)
-			for i := 0; i < c.conf.RotorCount; i++ {
+			fmt.Printf("change rotors, please input number of rotors (seperated by space): ")
+			var rCount int
+			_, _ = fmt.Scan(&rCount)
+			if rCount <= 0 {
+				fmt.Printf("Removing all rotors...")
+				c.enigmaMachine.Rotors = nil
+				fmt.Println("OK")
+				continue mainLoop
+			}
+			fmt.Printf("change rotors, please input %d rotor no (seperated by space): ", rCount)
+			rotorIndexes := make([]int, rCount)
+			for i := 0; i < rCount; i++ {
 				_, _ = fmt.Scan(&rotorIndexes[i])
 			}
 			fmt.Printf("Got no: %v\n", rotorIndexes)
@@ -90,7 +99,7 @@ mainLoop:
 			c.enigmaMachine.Rotors = rotors
 			fmt.Println("OK")
 		case "rote":
-			fmt.Printf("rotate rotors, please input %d alphabets (altogether without space): ", c.conf.RotorCount)
+			fmt.Printf("rotate rotors, please input %d alphabets (altogether without space): ", len(c.enigmaMachine.Rotors))
 			var str string
 			_, _ = fmt.Scan(&str)
 			str = strings.ToUpper(str)

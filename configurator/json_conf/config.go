@@ -8,8 +8,6 @@ import (
 )
 
 type Config struct {
-	Debug         bool           `json:"debug"`
-	RotorCount    int            `json:"rotor_count"`
 	InitialRotors []int          `json:"initial_rotors"`
 	InitialPlugs  []PlugConfig   `json:"initial_plugs"`
 	Rotors        []*RotorConfig `json:"rotors"`
@@ -17,9 +15,6 @@ type Config struct {
 }
 
 func (c *Config) MakeInitialRotors() ([]*machine.Rotor, error) {
-	if c.RotorCount != len(c.InitialRotors) {
-		return nil, fmt.Errorf("amount of initial rotors must equals to rotor count")
-	}
 	var initialRotors []*machine.Rotor
 	for _, rNo := range c.InitialRotors {
 		rot, err := c.MakeRotorByNo(rNo)

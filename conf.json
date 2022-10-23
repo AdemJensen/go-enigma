@@ -1,6 +1,4 @@
 {
-    "debug": false,
-    "rotor_count": 3,
     "initial_rotors": [
         1,
         2,
