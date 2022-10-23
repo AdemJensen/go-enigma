@@ -1,6 +1,13 @@
 package utils
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
+
+func init() {
+	rand.Seed(time.Now().Unix())
+}
 
 func RumpleRuneArray(rarr []rune) []rune {
 	for i := len(rarr) - 1; i > 0; i-- {
@@ -26,4 +33,8 @@ func RandomAlphabetMappingTable() map[string]string {
 		mappingTable[string(key)] = string(val[idx])
 	}
 	return mappingTable
+}
+
+func RandomAlphabet() rune {
+	return rune('A' + rand.Intn(26))
 }

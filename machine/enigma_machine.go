@@ -97,6 +97,33 @@ func (e *EnigmaMachine) SetRotorPosition(rotorPosition []rune) error {
 	return nil
 }
 
+// GetRingSettings gets rotor ring setting from left to right.
+// The position using rune 'A' to 'Z' representing 1-26
+func (e *EnigmaMachine) GetRingSettings() []rune {
+	var res []rune
+	for _, r := range e.Rotors {
+		res = append(res, r.GetRing())
+	}
+	return res
+}
+
+// SetRingSettings set rotor ring setting from left to right.
+// The position using rune 'A' to 'Z' representing 1-26
+func (e *EnigmaMachine) SetRingSettings(ringSettings []rune) error {
+	if len(ringSettings) != len(e.Rotors) {
+		return fmt.Errorf("must provide %d rotor positions", len(e.Rotors))
+	}
+	for _, r := range ringSettings {
+		if !validations.IsValidRotorPosition(r) {
+			return errors.NewInputError(errors.InputTypeRotorLocation, string(r))
+		}
+	}
+	for i, r := range ringSettings {
+		_ = e.Rotors[i].SetRing(r)
+	}
+	return nil
+}
+
 type KeyboardKey rune
 
 func (k KeyboardKey) Validate() error {

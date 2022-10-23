@@ -27,7 +27,7 @@ func (c *CommandLineInterface) Run() error {
 	}
 mainLoop:
 	for {
-		fmt.Printf("Please input command (info, input, change, rote, plug, unplug, cp, quit/exit): ")
+		fmt.Printf("Please input command (info, input, change, rote, plug, unplug, ring, cp, quit/exit): ")
 		var command string
 		_, _ = fmt.Scan(&command)
 		switch command {
@@ -37,6 +37,7 @@ mainLoop:
 				rotorNo = append(rotorNo, r.No())
 			}
 			fmt.Printf("Current rotor no: %v\n", rotorNo)
+			fmt.Printf("Current rotor ring settings: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRingSettings()))
 			fmt.Printf("Current rotor position: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRotorPosition()))
 			plugs := c.enigmaMachine.PlugBoard.PluggedCables()
 			var pbStr []string
@@ -107,11 +108,30 @@ mainLoop:
 			rarr := []rune(str)
 			for _, r := range rarr {
 				if !unicode.IsUpper(r) {
-					fmt.Printf("input contains invalid char '%c', will not execute spin...\n", r)
+					fmt.Printf("input contains invalid char '%c', will not execute rotate...\n", r)
 					continue mainLoop
 				}
 			}
 			err := c.enigmaMachine.SetRotorPosition(rarr)
+			if err != nil {
+				fmt.Printf("Error: %s\n", err.Error())
+				continue mainLoop
+			}
+			fmt.Println("OK")
+		case "ring":
+			fmt.Printf("change rotor ring settings, please input %d alphabets (altogether without space): ", len(c.enigmaMachine.Rotors))
+			var str string
+			_, _ = fmt.Scan(&str)
+			str = strings.ToUpper(str)
+			fmt.Printf("Got str: %s\n", str)
+			rarr := []rune(str)
+			for _, r := range rarr {
+				if !unicode.IsUpper(r) {
+					fmt.Printf("input contains invalid char '%c', will not execute ring setting...\n", r)
+					continue mainLoop
+				}
+			}
+			err := c.enigmaMachine.SetRingSettings(rarr)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				continue mainLoop

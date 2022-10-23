@@ -9,12 +9,13 @@ import (
 type Rotor struct {
 	no             int
 	spinOffset     int
+	ringOffset     int // on which offset will this ring rotates the next rotor
 	mappingTableRL map[rune]rune
 	mappingTableLR map[rune]rune
 }
 
 // NewRotorFromMapping receives rotor no and mapping from right to left.
-func NewRotorFromMapping(no int, m map[rune]rune) (*Rotor, error) {
+func NewRotorFromMapping(no int, ring rune, m map[rune]rune) (*Rotor, error) {
 	mappingTableRL := make(map[rune]rune)
 	mappingTableLR := make(map[rune]rune)
 	for key, val := range m {
@@ -39,6 +40,7 @@ func NewRotorFromMapping(no int, m map[rune]rune) (*Rotor, error) {
 	return &Rotor{
 		no:             no,
 		spinOffset:     0,
+		ringOffset:     int(ring - 'A'),
 		mappingTableRL: mappingTableRL,
 		mappingTableLR: mappingTableLR,
 	}, nil
@@ -52,6 +54,7 @@ func NewDefaultRotor(no int) *Rotor {
 	return &Rotor{
 		no:             no,
 		spinOffset:     0,
+		ringOffset:     0,
 		mappingTableRL: mapping,
 		mappingTableLR: mapping,
 	}
@@ -61,10 +64,11 @@ func (r *Rotor) No() int {
 	return r.no
 }
 
+// Spin returns whether to spin the next rotor
 func (r *Rotor) Spin() bool {
 	before := r.spinOffset
 	r.spinOffset = (r.spinOffset + 1) % 26
-	return before > r.spinOffset // true means circulated
+	return before == r.ringOffset // true means should spin next
 }
 
 func (r *Rotor) SetPosition(v rune) error {
@@ -77,6 +81,20 @@ func (r *Rotor) SetPosition(v rune) error {
 
 func (r *Rotor) CurrentPosition() rune {
 	return rune('A' + r.spinOffset)
+}
+
+// SetRing change rotor's ring setting
+func (r *Rotor) SetRing(v rune) error {
+	if !unicode.IsUpper(v) {
+		return fmt.Errorf("provided index is not an proper ring setting")
+	}
+	r.ringOffset = int(v - 'A')
+	return nil
+}
+
+// GetRing get rotor's current ring setting
+func (r *Rotor) GetRing() rune {
+	return rune('A' + r.ringOffset)
 }
 
 func (r *Rotor) EncodeRightToLeft(v rune) rune {
