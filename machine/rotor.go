@@ -1,11 +1,8 @@
-package rotor
+package machine
 
 import (
-	"enigma/config"
-	"enigma/utils"
 	"fmt"
 	"unicode"
-	"unicode/utf8"
 )
 
 // Rotor encodes given alphabet, and rotates itself on every keyboard press.
@@ -16,20 +13,13 @@ type Rotor struct {
 	mappingTableLR map[rune]rune
 }
 
-func NewRotorFromConf(no int, m map[string]string) (*Rotor, error) {
+// NewRotorFromMapping receives rotor no and mapping from right to left.
+func NewRotorFromMapping(no int, m map[rune]rune) (*Rotor, error) {
 	mappingTableRL := make(map[rune]rune)
 	mappingTableLR := make(map[rune]rune)
-	for keyStr, valStr := range m {
-		if utf8.RuneCountInString(keyStr) != 1 {
-			return nil, fmt.Errorf("got invalid rotor mapping key '%s'", keyStr)
-		}
-		if utf8.RuneCountInString(valStr) != 1 {
-			return nil, fmt.Errorf("got invalid rotor mapping val '%s'", valStr)
-		}
-		key := []rune(keyStr)[0]
-		val := []rune(valStr)[0]
-		if _, exists := mappingTableRL[key]; exists {
-			return nil, fmt.Errorf("conflict key '%c'", key)
+	for key, val := range m {
+		if !unicode.IsUpper(key) || !unicode.IsUpper(val) {
+			return nil, fmt.Errorf("invalid mapping key or val")
 		}
 		mappingTableRL[key] = val
 		mappingTableLR[val] = key
@@ -67,14 +57,6 @@ func NewDefaultRotor(no int) *Rotor {
 	}
 }
 
-func NewRandomRotor(no int) *Rotor {
-	rot, err := NewRotorFromConf(no, utils.RuneMapToStringMap(utils.RandomAlphabetMappingTable()))
-	if err != nil {
-		panic(err)
-	}
-	return rot
-}
-
 func (r *Rotor) No() int {
 	return r.no
 }
@@ -105,11 +87,4 @@ func (r *Rotor) EncodeRightToLeft(v rune) rune {
 func (r *Rotor) EncodeLeftToRight(v rune) rune {
 	entryLoc := (v-'A'+rune(r.spinOffset))%26 + 'A'
 	return (r.mappingTableLR[entryLoc]-'A'-rune(r.spinOffset)+26)%26 + 'A'
-}
-
-func (r *Rotor) ExportConf() *config.RotorConfig {
-	return &config.RotorConfig{
-		No:      r.no,
-		Mapping: utils.RuneMapToStringMap(r.mappingTableRL),
-	}
 }

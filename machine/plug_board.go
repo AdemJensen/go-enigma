@@ -1,11 +1,9 @@
-package plug_board
+package machine
 
 import (
-	"enigma/config"
 	"enigma/errors"
 	"enigma/validations"
 	"fmt"
-	"unicode/utf8"
 )
 
 type PlugBoard struct {
@@ -22,27 +20,6 @@ func NewPlugBoard() *PlugBoard {
 		occupiedPlugs: make(map[rune]bool),
 		switchMapping: mappingTable,
 	}
-}
-
-func (p *PlugBoard) ApplyConfig(cfg []config.PlugConfig) error {
-	for i, c := range cfg {
-		if len(c) != 2 {
-			return fmt.Errorf("plug config must contain 2 strings for every set")
-		}
-		if utf8.RuneCountInString(c[0]) != 1 {
-			return fmt.Errorf("got invalid plug board set[0] key '%s'", c[0])
-		}
-		if utf8.RuneCountInString(c[1]) != 1 {
-			return fmt.Errorf("got invalid plug board set[1] val '%s'", c[1])
-		}
-		c1 := []rune(c[0])[0]
-		c2 := []rune(c[1])[0]
-		err := p.Plug(c1, c2)
-		if err != nil {
-			return fmt.Errorf("cannot process plug conf %d: %v", i, err)
-		}
-	}
-	return nil
 }
 
 func (p *PlugBoard) Encode(v rune) rune {

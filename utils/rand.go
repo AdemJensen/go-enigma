@@ -15,15 +15,15 @@ func RandomSelectRuneArray(rarr []rune, n int) []rune {
 	return RumpleRuneArray(rarr)[:n]
 }
 
-func RandomAlphabetMappingTable() map[rune]rune {
+func RandomAlphabetMappingTable() map[string]string {
 	var mappingKeys []rune
 	for key := 'A'; key <= 'Z'; key++ {
 		mappingKeys = append(mappingKeys, key)
 	}
 	val := RumpleRuneArray(mappingKeys)
-	mappingTable := make(map[rune]rune)
+	mappingTable := make(map[string]string)
 	for idx, key := 0, 'A'; key <= 'Z'; idx, key = idx+1, key+1 {
-		mappingTable[key] = val[idx]
+		mappingTable[string(key)] = string(val[idx])
 	}
 	return mappingTable
 }

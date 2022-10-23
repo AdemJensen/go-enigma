@@ -4,14 +4,14 @@ OUTPUT_DIR = ./bin
 all: fmt build
 
 run:
-	go run ./
+	go run ./cmd/test_cli
 
 gen:
-	go run ./gen
+	go run ./cmd/gen
 
 build:
-	go build -o $(OUTPUT_DIR)/enigma
-	go build -o $(OUTPUT_DIR)/gen ./gen
+	go build -o $(OUTPUT_DIR)/enigma ./cmd/test_cli
+	go build -o $(OUTPUT_DIR)/gen ./cmd/gen
 
 fmt:
 	goimports -w ./

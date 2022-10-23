@@ -2,18 +2,15 @@ package machine
 
 import (
 	"enigma/errors"
-	"enigma/machine/plug_board"
-	"enigma/machine/reflector"
-	"enigma/machine/rotor"
 	"enigma/validations"
 	"fmt"
 	"unicode"
 )
 
 type EnigmaMachine struct {
-	PlugBoard *plug_board.PlugBoard
-	Rotors    []*rotor.Rotor // rotors from left to right
-	Reflector *reflector.Reflector
+	PlugBoard *PlugBoard
+	Rotors    []*Rotor // rotors from left to right
+	Reflector *Reflector
 }
 
 const (
@@ -21,14 +18,14 @@ const (
 )
 
 func NewDefaultEnigmaMachine() *EnigmaMachine {
-	var rotors []*rotor.Rotor
+	var rotors []*Rotor
 	for i := 0; i < DefaultNRotors; i++ {
-		rotors = append(rotors, rotor.NewDefaultRotor(i+1))
+		rotors = append(rotors, NewDefaultRotor(i+1))
 	}
 	return &EnigmaMachine{
-		PlugBoard: plug_board.NewPlugBoard(),
+		PlugBoard: NewPlugBoard(),
 		Rotors:    rotors,
-		Reflector: reflector.NewDefaultReflector(),
+		Reflector: NewDefaultReflector(),
 	}
 }
 

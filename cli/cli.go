@@ -1,9 +1,8 @@
-package main
+package cli
 
 import (
-	"enigma/config"
+	"enigma/configurator/json_conf"
 	"enigma/machine"
-	"enigma/machine/rotor"
 	"enigma/utils"
 	"fmt"
 	"strings"
@@ -12,11 +11,13 @@ import (
 
 type CommandLineInterface struct {
 	enigmaMachine *machine.EnigmaMachine
+	conf          *json_conf.Config
 }
 
-func NewCommandLineInterface(em *machine.EnigmaMachine) *CommandLineInterface {
+func NewCommandLineInterface(em *machine.EnigmaMachine, conf *json_conf.Config) *CommandLineInterface {
 	return &CommandLineInterface{
 		enigmaMachine: em,
+		conf:          conf,
 	}
 }
 
@@ -70,25 +71,26 @@ mainLoop:
 			fmt.Printf("Current rotor position: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRotorPosition()))
 			fmt.Println("OK")
 		case "change":
-			fmt.Printf("change rotors, please input %d rotor numbers (seperated by space): ", config.Conf.RotorCount)
-			rotorIndexes := make([]int, config.Conf.RotorCount)
-			for i := 0; i < config.Conf.RotorCount; i++ {
+			fmt.Printf("change rotors, please input %d rotor numbers (seperated by space): ", c.conf.RotorCount)
+			rotorIndexes := make([]int, c.conf.RotorCount)
+			for i := 0; i < c.conf.RotorCount; i++ {
 				_, _ = fmt.Scan(&rotorIndexes[i])
 			}
 			fmt.Printf("Got no: %v\n", rotorIndexes)
-			var rotors []*rotor.Rotor
+			var rotors []*machine.Rotor
 			for _, n := range rotorIndexes {
-				if rot, ok := rotor.Configurations[n]; !ok {
-					fmt.Printf("Error: Rotor %d not exist\n", n)
-				} else {
-					_ = rot.SetPosition('A')
-					rotors = append(rotors, rot)
+				rot, err := c.conf.MakeRotorByNo(n)
+				if err != nil {
+					fmt.Printf("invalid rotor (no=%d): %v", n, err)
+					continue mainLoop
 				}
+				_ = rot.SetPosition('A')
+				rotors = append(rotors, rot)
 			}
 			c.enigmaMachine.Rotors = rotors
 			fmt.Println("OK")
 		case "rote":
-			fmt.Printf("rotate rotors, please input %d alphabets (altogether without space): ", config.Conf.RotorCount)
+			fmt.Printf("rotate rotors, please input %d alphabets (altogether without space): ", c.conf.RotorCount)
 			var str string
 			_, _ = fmt.Scan(&str)
 			str = strings.ToUpper(str)
