@@ -54,6 +54,19 @@ func NewRotorFromConf(no int, m map[string]string) (*Rotor, error) {
 	}, nil
 }
 
+func NewDefaultRotor(no int) *Rotor {
+	mapping := make(map[rune]rune)
+	for alp := 'A'; alp <= 'Z'; alp++ {
+		mapping[alp] = alp
+	}
+	return &Rotor{
+		no:             no,
+		spinOffset:     0,
+		mappingTableRL: mapping,
+		mappingTableLR: mapping,
+	}
+}
+
 func NewRandomRotor(no int) *Rotor {
 	rot, err := NewRotorFromConf(no, utils.RuneMapToStringMap(utils.RandomAlphabetMappingTable()))
 	if err != nil {

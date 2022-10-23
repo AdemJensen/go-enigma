@@ -7,3 +7,11 @@ func RuneMapToStringMap(m map[rune]rune) map[string]string {
 	}
 	return res
 }
+
+func RuneSliceToStringSlice(s []rune) []string {
+	var res []string
+	for _, c := range s {
+		res = append(res, string(c))
+	}
+	return res
+}

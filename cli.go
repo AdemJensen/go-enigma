@@ -2,31 +2,42 @@ package main
 
 import (
 	"enigma/config"
-	"enigma/machine/brouilleur"
-	"enigma/machine/plug_board"
+	"enigma/machine"
+	"enigma/machine/rotor"
+	"enigma/utils"
 	"fmt"
 	"strings"
 	"unicode"
 )
 
 type CommandLineInterface struct {
+	enigmaMachine *machine.EnigmaMachine
 }
 
-func NewCommandLineInterface() *CommandLineInterface {
-	return &CommandLineInterface{}
+func NewCommandLineInterface(em *machine.EnigmaMachine) *CommandLineInterface {
+	return &CommandLineInterface{
+		enigmaMachine: em,
+	}
 }
 
 func (c *CommandLineInterface) Run() error {
+	if c.enigmaMachine == nil || !c.enigmaMachine.IsValid() {
+		return fmt.Errorf("invalid enigma machine")
+	}
 mainLoop:
 	for {
-		fmt.Printf("Please input command (info, input, change, spin, plug, unplug, cp, quit/exit): ")
+		fmt.Printf("Please input command (info, input, change, rote, plug, unplug, cp, quit/exit): ")
 		var command string
 		_, _ = fmt.Scan(&command)
 		switch command {
 		case "info":
-			fmt.Printf("Current rotor no: %v\n", brouilleur.Configuration.GetRotorNo())
-			fmt.Printf("Current rotor index: %s\n", string(brouilleur.Configuration.GetRotorPositions()))
-			plugs := plug_board.Configuration.Mappings()
+			var rotorNo []int
+			for _, r := range c.enigmaMachine.Rotors {
+				rotorNo = append(rotorNo, r.No())
+			}
+			fmt.Printf("Current rotor no: %v\n", rotorNo)
+			fmt.Printf("Current rotor position: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRotorPosition()))
+			plugs := c.enigmaMachine.PlugBoard.PluggedCables()
 			var pbStr []string
 			for _, plug := range plugs {
 				pbStr = append(pbStr, fmt.Sprintf("%c - %c", plug[0], plug[1]))
@@ -52,16 +63,11 @@ mainLoop:
 			}
 			var res string
 			for _, r := range rarr {
-				r = plug_board.Configuration.Encode(r)
-				brouilleur.Configuration.SpinRotor()
-				if config.Conf.Debug {
-					fmt.Printf("Current rotor index: %s\n", string(brouilleur.Configuration.GetRotorPositions()))
-				}
-				r = plug_board.Configuration.Encode(r)
-				res += string(brouilleur.Configuration.Encode(r))
+				r, _ = c.enigmaMachine.TypeKey(machine.KeyboardKey(r))
+				res += string(r)
 			}
 			fmt.Printf("Output: %s\n", res)
-			fmt.Printf("Current rotor index: %s\n", string(brouilleur.Configuration.GetRotorPositions()))
+			fmt.Printf("Current rotor position: %v\n", utils.RuneSliceToStringSlice(c.enigmaMachine.GetRotorPosition()))
 			fmt.Println("OK")
 		case "change":
 			fmt.Printf("change rotors, please input %d rotor numbers (seperated by space): ", config.Conf.RotorCount)
@@ -69,15 +75,20 @@ mainLoop:
 			for i := 0; i < config.Conf.RotorCount; i++ {
 				_, _ = fmt.Scan(&rotorIndexes[i])
 			}
-			fmt.Printf("Got indexes: %v\n", rotorIndexes)
-			err := brouilleur.Configuration.ChangeRotors(rotorIndexes)
-			if err != nil {
-				fmt.Printf("Error: %s\n", err.Error())
-				continue mainLoop
+			fmt.Printf("Got no: %v\n", rotorIndexes)
+			var rotors []*rotor.Rotor
+			for _, n := range rotorIndexes {
+				if rot, ok := rotor.Configurations[n]; !ok {
+					fmt.Printf("Error: Rotor %d not exist\n", n)
+				} else {
+					_ = rot.SetPosition('A')
+					rotors = append(rotors, rot)
+				}
 			}
+			c.enigmaMachine.Rotors = rotors
 			fmt.Println("OK")
-		case "spin":
-			fmt.Printf("spin rotors, please input %d alphabets (altogether without space): ", config.Conf.RotorCount)
+		case "rote":
+			fmt.Printf("rotate rotors, please input %d alphabets (altogether without space): ", config.Conf.RotorCount)
 			var str string
 			_, _ = fmt.Scan(&str)
 			str = strings.ToUpper(str)
@@ -89,7 +100,7 @@ mainLoop:
 					continue mainLoop
 				}
 			}
-			err := brouilleur.Configuration.SetRotorPositions(rarr)
+			err := c.enigmaMachine.SetRotorPosition(rarr)
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				continue mainLoop
@@ -105,7 +116,7 @@ mainLoop:
 				fmt.Printf("must provide 2 alphabets!\n")
 				continue mainLoop
 			}
-			err := plug_board.Configuration.Plug(rune(str[0]), rune(str[1]))
+			err := c.enigmaMachine.PlugBoard.Plug(rune(str[0]), rune(str[1]))
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				continue mainLoop
@@ -121,7 +132,7 @@ mainLoop:
 				fmt.Printf("must provide 2 alphabets!\n")
 				continue mainLoop
 			}
-			err := plug_board.Configuration.Unplug(rune(str[0]), rune(str[1]))
+			err := c.enigmaMachine.PlugBoard.Unplug(rune(str[0]), rune(str[1]))
 			if err != nil {
 				fmt.Printf("Error: %s\n", err.Error())
 				continue mainLoop
@@ -129,7 +140,7 @@ mainLoop:
 			fmt.Println("OK")
 		case "cp":
 			fmt.Printf("Clearing plugs...")
-			plug_board.Configuration.Clear()
+			c.enigmaMachine.PlugBoard.Clear()
 			fmt.Printf("OK\n")
 			fmt.Println()
 		case "quit", "exit":

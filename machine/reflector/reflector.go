@@ -63,6 +63,16 @@ func NewRandomReflector() *Reflector {
 	}
 }
 
+func NewDefaultReflector() *Reflector {
+	mapping := make(map[rune]rune)
+	for key, val := 'A', 'Z'; key <= 'Z'; key, val = key+1, val-1 {
+		mapping[key] = val
+	}
+	return &Reflector{
+		mappingTable: mapping,
+	}
+}
+
 // Reflector reflects 1 alphabet with another
 type Reflector struct {
 	mappingTable map[rune]rune
