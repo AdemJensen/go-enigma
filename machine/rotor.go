@@ -54,7 +54,7 @@ func NewDefaultRotor(no int) *Rotor {
 	return &Rotor{
 		no:             no,
 		spinOffset:     0,
-		ringOffset:     0,
+		ringOffset:     25,
 		mappingTableRL: mapping,
 		mappingTableLR: mapping,
 	}
